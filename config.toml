@@ -1,0 +1,65 @@
+# ============================
+# SETTINGS
+# ============================
+
+[settings]
+threads = 4
+warehouse_dir = "warehouse/"
+temp_dir = "tmp/"
+log_level = "INFO"
+
+# ============================
+# SOURCES
+# ============================
+
+[sources.sales_raw]
+format = "csv"
+path = "data/sales.csv"
+
+[sources.users_raw]
+format = "csv"
+path = "data/users.csv"
+
+# ============================
+# TRANSFORMS
+# ============================
+
+[transforms.clean_sales]
+sql = """
+SELECT
+    sale_id,
+    user_id,
+    amount,
+    sale_date
+FROM {{ref(sales_raw)}}
+WHERE amount > 0
+"""
+depends = ["sales_raw"]
+materialize = "table"
+
+
+[transforms.enriched_sales]
+sql = """
+SELECT
+    s.sale_id,
+    s.user_id,
+    u.email,
+    s.amount,
+    s.sale_date
+FROM {{ref(clean_sales)}} s
+LEFT JOIN {{ref(users_raw)}} u
+    ON s.user_id = u.user_id
+"""
+depends = ["clean_sales", "users_raw"]
+materialize = "table"
+
+
+[transforms.final_sales]
+sql = """
+SELECT
+    *
+FROM {{ref(enriched_sales)}}
+"""
+depends = ["enriched_sales"]
+materialize = "final"
+table_name = "fact_sales"

@@ -1,0 +1,1 @@
+clang++ db.cpp     -I./libduckdb-linux-amd64     -L./libduckdb-linux-amd64     -Wl,-rpath,'$ORIGIN/libduckdb-linux-amd64'     -larrow     -lparquet     -lduckdb
