@@ -21,7 +21,7 @@
 
 #include <parquet/arrow/writer.h>
 
-#include "toml.hpp"
+#include "parser/toml.hpp"
 
 
 #include "libduckdb-linux-amd64/duckdb.h"

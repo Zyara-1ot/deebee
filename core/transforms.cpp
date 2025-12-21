@@ -1,6 +1,7 @@
 #include "transforms.hpp"
 #include "dependancy_graph.hpp"
 #include "duck.hpp"
+#include "meta.hpp"
 
 #include <filesystem>
 #include <iostream>
@@ -13,7 +14,7 @@ std::string Transform::compile_sql(std::string sql, bool fin) {
 
   std::smatch m;
   std::regex ref_re(R"(\{\{ref\(([^)]*)\)\}\})");
-  MetaDataObject meta = MetaDataObject();
+  //MetaDataObject meta = MetaDataObject();
   while (std::regex_search(sql, m, ref_re)) {
     std::string name = m[1];
 
@@ -35,7 +36,7 @@ std::string Transform::compile_sql(std::string sql, bool fin) {
              TransformMaterialize::PQET)) {
       // calculate working directory
       replacement =
-          "read_parquet('" + meta.work_dir + "/" + name + "/*.parquet" + "')";
+          "read_parquet('" + meta().work_dir + "/" + name + "/*.parquet" + "')";
     } else {
       if (dgraph->node_map[name]->ntype == NodeType::TRNS &&
           ((Transform *)dgraph->node_map[name])->tfm ==
@@ -72,9 +73,9 @@ void Transform::apply_node() {
   // duckdb_database db;
   // duckdb_connection con;
 
-  MetaDataObject meta = MetaDataObject();
+  //MetaDataObject meta = MetaDataObject();
 
-  std::string db_path = meta.work_dir + "/proc.db";
+  std::string db_path = meta().work_dir + "/proc.db";
   Duck db = Duck(db_path);
 
   // contains_forbidden
@@ -102,21 +103,21 @@ void Transform::apply_node() {
   db.close();
   if (tfm == TransformMaterialize::FINAL) {
     // FINAL
-    std::string fin_path = meta.work_dir + "/final/" + materialize_table + "/" +
+    std::string fin_path = meta().work_dir + "/final/" + materialize_table + "/" +
                            materialize_table + std::to_string(n_its) +
                            ".parquet";
-    if (!(std::filesystem::exists(meta.work_dir + "/final") &&
-          std::filesystem::is_directory(meta.work_dir + "/final"))) {
-      std::filesystem::create_directory(meta.work_dir + "/final");
-      std::filesystem::create_directory(meta.work_dir + "/final/" +
+    if (!(std::filesystem::exists(meta().work_dir + "/final") &&
+          std::filesystem::is_directory(meta().work_dir + "/final"))) {
+      std::filesystem::create_directory(meta().work_dir + "/final");
+      std::filesystem::create_directory(meta().work_dir + "/final/" +
                                         materialize_table);
     }
 
-    if (!(std::filesystem::exists(meta.work_dir + "/final/" +
+    if (!(std::filesystem::exists(meta().work_dir + "/final/" +
                                   materialize_table) &&
-          std::filesystem::is_directory(meta.work_dir + "/final/" +
+          std::filesystem::is_directory(meta().work_dir + "/final/" +
                                         materialize_table))) {
-      std::filesystem::create_directory(meta.work_dir + "/final/" +
+      std::filesystem::create_directory(meta().work_dir + "/final/" +
                                         materialize_table);
     }
 
@@ -128,12 +129,12 @@ void Transform::apply_node() {
     // duckdb_connection con_c;
 
     std::string pqet_path_f =
-        meta.work_dir + "/final/" + materialize_table + "/*.parquet";
-    if (!(std::filesystem::exists(meta.work_dir + "/final") &&
-          std::filesystem::is_directory(meta.work_dir + "/final"))) {
-      std::filesystem::create_directory(meta.work_dir + "/final");
+        meta().work_dir + "/final/" + materialize_table + "/*.parquet";
+    if (!(std::filesystem::exists(meta().work_dir + "/final") &&
+          std::filesystem::is_directory(meta().work_dir + "/final"))) {
+      std::filesystem::create_directory(meta().work_dir + "/final");
     }
-    std::string fin_path = meta.work_dir + "/final/final.duckdb";
+    std::string fin_path = meta().work_dir + "/final/final.duckdb";
 
     Duck db_f = Duck(fin_path);
     // Duck::table_transfer(&con_c,
