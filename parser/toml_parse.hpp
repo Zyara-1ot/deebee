@@ -1,3 +1,4 @@
+#pragma once
 #include "../core/dependancy_graph.hpp"
 #include "toml.hpp"
 

@@ -1,4 +1,3 @@
-#pragma once
 #include "dependancy_graph.hpp"
 #include "node.hpp"
 
