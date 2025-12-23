@@ -95,7 +95,27 @@ void Transform::apply_node() {
 
   Duck::exec(&db.con, comp_sql);
 
-  Duck::write_final(&db.con, materialize_table, "tmp");
+
+if (tfm == TransformMaterialize::TABLE) {
+    Duck::write_final(&db.con, materialize_table, "tmp");
+}
+else if (tfm == TransformMaterialize::PQET) {
+    std::string pqet_dir =
+        meta().work_dir + "/" + materialize_table;
+
+    if (!std::filesystem::exists(pqet_dir)) {
+        std::filesystem::create_directory(pqet_dir);
+    }
+
+    std::string pqet_path =
+        pqet_dir + "/" + materialize_table +
+        std::to_string(n_its) + ".parquet";
+
+    Duck::write_table_parquet(db_path, "tmp", pqet_path);
+}
+
+
+
   std::string table_dropper = "DROP TABLE IF EXISTS tmp;";
   Duck::exec(&db.con, table_dropper);
 
