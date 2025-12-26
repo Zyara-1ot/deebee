@@ -74,7 +74,12 @@ TomlParse::TomlParse(const std::string &workdir) {
             tfr->materialize_table =
                 config["transforms"][it.first]["table_name"]
                     .value_or<std::string>("");
-          } else {
+          }
+          else if (materialize == "parquet"){
+            tfr->tfm = TransformMaterialize::PQET;
+            tfr->materialize_table = it.first.data();
+          }
+          else {
             tfr->tfm = TransformMaterialize::TABLE;
             tfr->materialize_table = it.first.data();
           }

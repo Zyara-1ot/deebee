@@ -35,7 +35,7 @@ FROM {{ref(sales_raw)}}
 WHERE amount > 0
 """
 depends = ["sales_raw"]
-materialize = "table"
+materialize = "parquet"
 
 
 [transforms.enriched_sales]

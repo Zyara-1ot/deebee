@@ -111,13 +111,17 @@ else if (tfm == TransformMaterialize::PQET) {
         pqet_dir + "/" + materialize_table +
         std::to_string(n_its) + ".parquet";
 
-    Duck::write_table_parquet(db_path, "tmp", pqet_path);
+        std::string copy_sql = 
+            "COPY (SELECT * FROM tmp) TO '" + pqet_path + "' (FORMAT PARQUET);";
+        Duck::exec(&db.con, copy_sql);
 }
 
 
 
+if (tfm == TransformMaterialize::TABLE){
   std::string table_dropper = "DROP TABLE IF EXISTS tmp;";
   Duck::exec(&db.con, table_dropper);
+}
 
   db.disconnect();
   db.close();
@@ -141,7 +145,10 @@ else if (tfm == TransformMaterialize::PQET) {
                                         materialize_table);
     }
 
-    Duck::write_table_parquet(db_path, materialize_table, fin_path);
+    std::string final_copy_sql = 
+        "COPY (SELECT * FROM " + materialize_table + 
+      ") TO '" + fin_path + "' (FORMAT PARQUET);";
+    Duck::exec(&db.con, final_copy_sql);
   }
 
   if (tfm == TransformMaterialize::FINAL) {
